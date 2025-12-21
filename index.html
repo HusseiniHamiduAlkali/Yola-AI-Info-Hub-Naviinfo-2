@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="Data/Images/jippujam.jpg" style="overflow: hidden;object-fit: fill;width: 100%;height: 100%; border-radius:12px;"/>
+  <title>Yola AI Info Hub</title>
+  <link rel="stylesheet" href="styles/global.css">
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/home.css">
+  <link rel="stylesheet" href="styles/eduinfo.css">
+  <link rel="stylesheet" href="styles/agroinfo.css">
+  <link rel="stylesheet" href="styles/mediinfo.css">
+  <link rel="stylesheet" href="styles/naviinfo.css">
+  <link rel="stylesheet" href="styles/ecoinfo.css">
+  <link rel="stylesheet" href="styles/serviinfo.css">
+  <link rel="stylesheet" href="styles/communityinfo.css">
+  <link rel="stylesheet" href="styles/aboutinfo.css">
+  <link rel="stylesheet" href="styles/auth.css">
+  <!-- <link rel="stylesheet" href="styles/mapsinfo.css"/> -->
+  <link rel="stylesheet" href="styles/ecoAI.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <div id="navbar"></div>
+  <div id="main-content">
+  <div id="ecoinfo-content"></div>
+  <div id="eduinfo-content"></div>
+  </div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.11.0/dist/tf.min.js"></script>
+  <script src="components/navbar.js"></script>
+  <script src="components/auth.js"></script>
+  <script src="components/authpages.js"></script>
+  <script src="components/home.js"></script>
+  <script src="components/eduinfo.js"></script>
+  <script src="components/agroinfo.js"></script>
+  <script src="components/mediinfo.js"></script>
+  <script src="components/naviinfo.js"></script>
+  <script src="components/ecoinfo.js"></script>
+  <script src="components/serviinfo.js"></script>
+  <script src="components/communityinfo.js"></script>
+  <script src="components/aboutinfo.js"></script>
+  <script src="components/ecoClassifier.js"></script>
+  <script src="components/ecoAI.js"></script>
+  <script src="components/details-navigation.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Section loader for auth and main pages
+    // Internal loader that actually performs the section load. Returns a Promise.
+    window.__performLoadSection = function(section) {
+      // Auth pages: hide full navbar, show minimal appbar
+      const navbarDiv = document.getElementById('navbar');
+      const minimalAppbar = `<div class="minimal-appbar"><span class="appname">Yola AI Info Hub</span></div>`;
+      
+      // Handle section-specific styles
+      const sections = ['home', 'eduinfo', 'agroinfo', 'mediinfo', 'naviinfo', 'ecoinfo', 'serviinfo', 'communityinfo', 'aboutinfo'];
+      sections.forEach(s => {
+        document.body.classList.remove(`${s}-section`);
+      });
+      if (sections.includes(section)) {
+        document.body.classList.add(`${section}-section`);
+      }
+
+      if (window.AuthSections && window.AuthSections[section]) {
+        navbarDiv.innerHTML = minimalAppbar;
+        const page = window.AuthSections[section];
+        document.getElementById('main-content').innerHTML = page.render();
+        if (page.mount) page.mount();
+        return Promise.resolve();
+      } else {
+        // Restore full navbar if it was replaced by minimal appbar
+        if (!navbarDiv.querySelector('.navbar')) {
+          navbarDiv.innerHTML = Navbar.render();
+          if (window.updateAuthUI) window.updateAuthUI(null);
+        }
+      }
+      // Remove any previously loaded section script
+      document.querySelectorAll('script[data-section-script]').forEach(s => s.remove());
+      document.getElementById('main-content').innerHTML = '';
+      delete window.renderSection;
+      const routes = {
+        home: 'components/home.js',
+        eduinfo: 'components/eduinfo.js',
+        agroinfo: 'components/agroinfo.js',
+        mediinfo: 'components/mediinfo.js',
+        naviinfo: 'components/naviinfo.js',
+        communityinfo: 'components/communityinfo.js',
+        aboutinfo: 'components/aboutinfo.js',
+        ecoinfo: 'components/ecoinfo.js',
+        serviinfo: 'components/serviinfo.js',
+      };
+      return new Promise((resolve) => {
+  const baseSrc = routes[section] || routes['home'];
+  console.log('performLoadSection: requested', section, baseSrc);
+  // Fast-path: if a script with this baseSrc is already present, and renderSection is defined,
+  // call renderSection directly to avoid reloading the script and potential ordering issues.
+  const existingScript = Array.from(document.querySelectorAll('script[src]')).find(s => s.src && s.src.indexOf(baseSrc) !== -1);
+  if (existingScript && typeof window.renderSection === 'function'){
+    console.log('performLoadSection: existing script found, invoking renderSection for', section);
+    try{ window.renderSection(); }catch(e){ console.error('renderSection threw', e); }
+    window.highlightActiveNav?.(section);
+    return resolve();
+  }
+
+  const script = document.createElement('script');
+  // Add a small cache-buster to force re-execution when needed (helps restore)
+  script.src = baseSrc + '?_r=' + Date.now();
+        script.setAttribute('data-section-script', 'true');
+        script.onload = () => {
+          console.log('performLoadSection: script loaded for', section, 'window.renderSection exists?', typeof window.renderSection === 'function');
+          try{
+            if (window.renderSection) {
+              // Allow renderSection to run synchronously; resolve after it completes
+              window.renderSection();
+            }
+          }catch(e){ console.error('renderSection error', e); }
+          window.highlightActiveNav?.(section);
+          resolve();
+        };
+  script.onerror = (err) => { console.error('Error loading section script', baseSrc, err); resolve(); };
+        document.body.appendChild(script);
+      });
+    };
+
+    // Public loader: if a restore is in progress, queue requests (ignore 'home')
+    window.loadSection = function(section){
+      window.__pendingLoadQueue = window.__pendingLoadQueue || [];
+      if(window.__restoringSection){
+        if(section === 'home') return Promise.resolve();
+        return new Promise((resolve, reject) => {
+          window.__pendingLoadQueue.push({section, resolve, reject});
+        });
+      }
+      return window.__performLoadSection(section);
+    };
+    // Render the navbar only once on initial load
+    document.getElementById('navbar').innerHTML = Navbar.render();
+    if (window.updateAuthUI) window.updateAuthUI(null);
+    // Load saved section if available (restores from details page back-button), otherwise default to home
+    (function(){
+      const pendingSection = sessionStorage.getItem('lastSection');
+      const pendingScroll = parseInt(sessionStorage.getItem('lastScroll') || '0', 10) || 0;
+      if(pendingSection){
+        // mark that we're in restore mode so other callers don't override
+        window.__restoringSection = true;
+        // Directly perform the load for restore to avoid queuing the request
+        window.__performLoadSection(pendingSection).then(()=>{
+          // One deterministic scroll after the section has rendered
+          try{ window.scrollTo(0, pendingScroll); }catch(e){}
+          try{ document.getElementById('main-content')?.scrollTo?.(0, pendingScroll); }catch(e){}
+          // Clear stored values so they aren't reused
+          sessionStorage.removeItem('lastSection');
+          sessionStorage.removeItem('lastScroll');
+            // Unset restoring flag now that restore is complete
+            window.__restoringSection = false;
+            // Drain any queued load requests (skip any 'home' requests)
+            const q = window.__pendingLoadQueue || [];
+            window.__pendingLoadQueue = [];
+            (async function drain(){
+              for(const req of q){
+                if(req && req.section === 'home') {
+                  try{ req.resolve(); }catch(e){}
+                  continue;
+                }
+                try{
+                  await window.__performLoadSection(req.section);
+                  req.resolve();
+                }catch(err){ req.reject(err); }
+              }
+            })();
+        }).catch((err)=>{
+          console.error('Error loading section for restore', err);
+          // ensure we clear the restoring flag so normal navigation resumes
+          sessionStorage.removeItem('lastSection');
+          sessionStorage.removeItem('lastScroll');
+          window.__restoringSection = false;
+        });
+      } else {
+        window.loadSection('home');
+      }
+    })();
+  </script>
+</body>
+</html>
