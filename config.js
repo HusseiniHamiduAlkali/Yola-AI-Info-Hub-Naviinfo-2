@@ -1,0 +1,5 @@
+// config.js
+window.CONFIG = {
+    TOMTOM_API_KEY: 'YOUR_ACTUAL_KEY_HERE',
+    GEMINI_API_KEY: 'YOUR_ACTUAL_KEY_HERE'
+};
