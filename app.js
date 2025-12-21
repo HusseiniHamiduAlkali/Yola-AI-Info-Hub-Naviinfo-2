@@ -1,3 +1,9 @@
+// ADD THIS TO THE VERY TOP OF THE FILE
+window.TOMTOM_API_KEY = 'REPLACE_TOMTOM_KEY';
+window.GEMINI_API_KEY = 'REPLACE_GEMINI_KEY';
+
+// ... rest of your existing app.js code ...
+
 //Help me call my API keys from the environment variables.
 
 // Ensure navbar is loaded
@@ -184,3 +190,4 @@ window.addEventListener('load', () => {
 });
 
 // SPA router logic is now unified in index.html. No section loader here.
+
