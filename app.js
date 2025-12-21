@@ -1,6 +1,9 @@
+// app.js
+// Use the keys from the global CONFIG object if it exists
+window.TOMTOM_API_KEY = window.CONFIG?.TOMTOM_API_KEY || 'FALLBACK_IF_NEEDED';
+window.GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || 'FALLBACK_IF_NEEDED';
 // ADD THIS TO THE VERY TOP OF THE FILE
-window.TOMTOM_API_KEY = 'REPLACE_TOMTOM_KEY';
-window.GEMINI_API_KEY = 'REPLACE_GEMINI_KEY';
+
 
 // ... rest of your existing app.js code ...
 
@@ -190,4 +193,5 @@ window.addEventListener('load', () => {
 });
 
 // SPA router logic is now unified in index.html. No section loader here.
+
 
