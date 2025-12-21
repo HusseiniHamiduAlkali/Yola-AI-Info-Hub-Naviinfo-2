@@ -1176,25 +1176,30 @@ function formatDuration(seconds) {
 * Uses TomTom API to calculate route data
 * This replaces the OSRM calls for better accuracy.
 */
+
+// Find this function
 window.getRouteData = async function(origin, destination) {
     try {
-        // 1. Geocode addresses to Lat/Lng (using Google or TomTom)
-        // For consistency with your current setup, we'll use a simple fetch to TomTom Geocoding
         const geocode = async (query) => {
             const q = query.toLowerCase().includes('yola') ? query : `${query}, Yola, Nigeria`;
-            const url = `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(q)}.json?key=${TOMTOM_KEY}`;
+            // CHANGE: Use window.TOMTOM_API_KEY here
+            const url = `https://api.tomtom.com/search/2/geocode/${encodeURIComponent(q)}.json?key=${window.TOMTOM_API_KEY}`;
             const res = await fetch(url).then(r => r.json());
             if (!res.results || res.results.length === 0) throw new Error(`Location not found: ${query}`);
-            return res.results[0].position; // returns {lat, lon}
+            return res.results[0].position; 
         };
 
         const startPos = await geocode(origin);
         const endPos = await geocode(destination);
 
-        // 2. Fetch Routing from TomTom
-        const routeUrl = `https://api.tomtom.com/routing/1/calculateRoute/${startPos.lat},${startPos.lon}:${endPos.lat},${endPos.lon}/json?key=${TOMTOM_KEY}&travelMode=car`;
+        // CHANGE: Use window.TOMTOM_API_KEY here
+        const routeUrl = `https://api.tomtom.com/routing/1/calculateRoute/${startPos.lat},${startPos.lon}:${endPos.lat},${endPos.lon}/json?key=${window.TOMTOM_API_KEY}&travelMode=car`;
         const routeRes = await fetch(routeUrl).then(r => r.json());
        
+        // ... rest of the function remains the same ...
+                                                                                                     
+                                                                                                     
+                                                                                                     
         if (!routeRes.routes || routeRes.routes.length === 0) throw new Error("No route found");
 
         const summary = routeRes.routes[0].summary;
@@ -1524,9 +1529,17 @@ window.sendNaviMessage = async function(faqText = '') {
     const historyContext = chatHistory.length > 0 
         ? "\n\nRecent conversation history:\n" + chatHistory.map(h => `User: ${h.user}\nAI: ${h.ai}`).join('\n\n')
         : "";
-        
-    finalAnswer = await getGeminiAnswer(NAVI_AI_PROMPT + "\n\n" + localData + historyContext, msg, window.GEMINI_API_KEY, imageData);
-    
+
+      
+    // Ensure the 3rd argument uses the global variable from app.js
+finalAnswer = await getGeminiAnswer(
+    NAVI_AI_PROMPT + "\n\n" + localData + historyContext, 
+    msg, 
+    window.GEMINI_API_KEY, // This refers to the placeholder in app.js
+    imageData
+);
+
+      
     // Store in chat history (keep last 5 messages)
     chatHistory.push({ user: msg, ai: finalAnswer });
     if (chatHistory.length > 5) chatHistory = chatHistory.slice(-5);
@@ -1563,4 +1576,5 @@ window.sendNaviMessage = async function(faqText = '') {
   if (stopBtn) stopBtn.style.display = 'none';
   window.naviAbortController = null;
 }};
+
 
