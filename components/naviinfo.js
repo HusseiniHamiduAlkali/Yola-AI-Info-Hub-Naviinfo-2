@@ -1,5 +1,5 @@
 // Replace with your actual TomTom API Key
-const TOMTOM_KEY = 'YOUR_TOMTOM_API_KEY';
+//const TOMTOM_KEY = 'YOUR_TOMTOM_API_KEY';
 
 
 
@@ -1563,3 +1563,4 @@ window.sendNaviMessage = async function(faqText = '') {
   if (stopBtn) stopBtn.style.display = 'none';
   window.naviAbortController = null;
 }};
+
