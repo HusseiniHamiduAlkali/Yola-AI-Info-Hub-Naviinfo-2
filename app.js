@@ -1,13 +1,14 @@
+
 // app.js
-// Use the keys from the global CONFIG object if it exists
-window.TOMTOM_API_KEY = window.CONFIG?.TOMTOM_API_KEY || 'FALLBACK_IF_NEEDED';
-window.GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || 'FALLBACK_IF_NEEDED';
-// ADD THIS TO THE VERY TOP OF THE FILE
+// Only use the injected keys from CONFIG
+window.TOMTOM_API_KEY = window.CONFIG?.TOMTOM_API_KEY || '';
+window.GEMINI_API_KEY = window.CONFIG?.GEMINI_API_KEY || '';
 
+// If they are still placeholders, it means the GitHub Action failed
+if (window.GEMINI_API_KEY === 'GEMINI_PLACEHOLDER') {
+    console.error("Injection failed: The app is still seeing placeholders.");
+}
 
-// ... rest of your existing app.js code ...
-
-//Help me call my API keys from the environment variables.
 
 // Ensure navbar is loaded
 function ensureNavbarLoaded() {
@@ -193,5 +194,6 @@ window.addEventListener('load', () => {
 });
 
 // SPA router logic is now unified in index.html. No section loader here.
+
 
 
