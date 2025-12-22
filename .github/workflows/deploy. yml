@@ -2,29 +2,22 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: ["main"] # Ensure this matches your branch name (main or master)
-
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+    branches: ["main"] # Or your default branch name
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Checkout
         uses: actions/checkout@v4
 
       - name: Inject API Keys
         run: |
-          sed -i "s/REPLACE_TOMTOM_KEY/${{ secrets.TOMTOM_API_KEY }}/g" app.js
-          sed -i "s/REPLACE_GEMINI_KEY/${{ secrets.GEMINI_API_KEY }}/g" app.js
+          # This replaces the placeholders in config.js with your GitHub Secrets
+          sed -i "s/TOMTOM_PLACEHOLDER/${{ secrets.TOMTOM_API_KEY }}/g" config.js
+          sed -i "s/GEMINI_PLACEHOLDER/${{ secrets.GEMINI_API_KEY }}/g" config.js
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
-      - name: Upload Artifact
+      - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
