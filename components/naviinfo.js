@@ -888,6 +888,31 @@ window.stopNaviResponse = function() {
   }
 };
 
+
+
+
+window.sendMessage = async function(section) {
+    const input = document.getElementById(`${section}-chat-input`);
+    const chat = document.getElementById(`${section}-chat-messages`);
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    try {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${window.GEMINI_API_KEY}`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ contents: [{ parts: [{ text: userMsg }] }] })
+        });
+        const data = await response.json();
+        chat.innerHTML += `<p><b>AI:</b> ${data.candidates[0].content.parts[0].text}</p>`;
+    } catch (e) {
+        alert("AI Error: Check if your GitHub Secret is named exactly GEMINI_API_KEY");
+    }
+};
+
+
+
+
 window.sendNaviMessage = async function(faqText = '') {
   const input = document.getElementById('navi-chat-input');
   const chat = document.getElementById('navi-chat-messages');
@@ -1003,6 +1028,7 @@ finalAnswer = await getGeminiAnswer(
   if (stopBtn) stopBtn.style.display = 'none';
   window.naviAbortController = null;
 }};
+
 
 
 
