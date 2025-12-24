@@ -683,6 +683,16 @@ async function getGeminiAnswer(localData, msg, apiKey, imageData = null) {
 
     const body = JSON.stringify({ contents: [contents] });
 
+
+
+
+
+      fetch("/api/gemini", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ prompt: userMessage })
+});
+      /*
     // 3. Fetch directly from Google
     let res = await fetch(serverUrl, {
       method: 'POST',
@@ -691,7 +701,7 @@ async function getGeminiAnswer(localData, msg, apiKey, imageData = null) {
       },
       body,
       signal: window.naviAbortController?.signal
-    });
+    });  */
 
     if (!res.ok) {
        // This will log the specific error (e.g., 400 Bad Request or 403 Forbidden)
@@ -1028,6 +1038,7 @@ finalAnswer = await getGeminiAnswer(
   if (stopBtn) stopBtn.style.display = 'none';
   window.naviAbortController = null;
 }};
+
 
 
 
